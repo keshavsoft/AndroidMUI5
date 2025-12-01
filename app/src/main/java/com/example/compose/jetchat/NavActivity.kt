@@ -46,6 +46,7 @@ import com.example.compose.jetchat.feature.sms.SmsDetailScreenV3
 import com.example.compose.jetchat.feature.sms.SmsDetailScreenV4
 import com.example.compose.jetchat.feature.sms.SmsDetailScreenV5
 import com.example.compose.jetchat.feature.sms.SmsListScreen
+import com.example.compose.jetchat.feature.sms.SmsListScreenV4
 import com.example.compose.jetchat.feature.sms.SmsListScreenV5
 import kotlinx.coroutines.launch
 
@@ -168,6 +169,26 @@ class NavActivity : AppCompatActivity() {
                                     )
                                 } else {
                                     SmsDetailScreenV2(
+                                        mobile = selectedSmsAddress!!,
+                                        onBack = {
+                                            selectedSmsAddress = null
+                                        }
+                                    )
+                                }
+                            }
+
+                            DrawerDestination.SmsV4 -> {   // OLD LIST
+                                if (selectedSmsAddress == null) {
+                                    SmsListScreenV4(
+                                        onBack = {
+                                            selectedDestination = DrawerDestination.Composers
+                                        },
+                                        onSmsClick = { group ->
+                                            selectedSmsAddress = group.mobile
+                                        }
+                                    )
+                                } else {
+                                    SmsDetailScreen(
                                         mobile = selectedSmsAddress!!,
                                         onBack = {
                                             selectedSmsAddress = null
