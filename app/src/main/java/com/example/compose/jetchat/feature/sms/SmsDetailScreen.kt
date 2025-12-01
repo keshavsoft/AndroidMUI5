@@ -1,5 +1,6 @@
 package com.example.compose.jetchat.feature.sms
 
+import ChatBubble
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -64,68 +65,10 @@ fun SmsDetailScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(messages, key = { it.timestamp }) { msg ->
-                    SmsBubble(msg)
+                    ChatBubble(message = msg)
+
                 }
             }
         }
     }
-}
-
-@Composable
-private fun SmsBubble(message: SmsMessage) {
-    val isSent = message.isSent
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 4.dp),
-        horizontalArrangement = if (isSent) Arrangement.End else Arrangement.Start
-    ) {
-        // Different bubble color for sent vs received
-        val bubbleColor = if (isSent) {
-            MaterialTheme.colorScheme.primaryContainer
-        } else {
-            MaterialTheme.colorScheme.secondaryContainer
-        }
-
-        val textColor = if (isSent) {
-            MaterialTheme.colorScheme.onPrimaryContainer
-        } else {
-            MaterialTheme.colorScheme.onSecondaryContainer
-        }
-
-        Surface(
-            shape = MaterialTheme.shapes.large,
-            tonalElevation = 1.dp,
-            shadowElevation = 1.dp,
-            color = bubbleColor,
-            modifier = Modifier
-                .widthIn(max = 280.dp)
-                .padding(
-                    start = if (isSent) 40.dp else 0.dp,
-                    end = if (isSent) 0.dp else 40.dp
-                )
-        ) {
-            Column(
-                modifier = Modifier.padding(10.dp)
-            ) {
-                Text(
-                    text = message.body,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = textColor
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = formatDetailTime(message.timestamp),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = textColor.copy(alpha = 0.8f)
-                )
-            }
-        }
-    }
-}
-
-private fun formatDetailTime(ts: Long): String {
-    val sdf = SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault())
-    return sdf.format(Date(ts))
 }
