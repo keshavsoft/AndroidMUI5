@@ -39,7 +39,7 @@ import java.util.*
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SmsListScreenV4(
+fun SmsDetailScreenV4(
     onBack: () -> Unit,
     onConversationClick: (mobile: String) -> Unit
 ) {
@@ -57,7 +57,7 @@ fun SmsListScreenV4(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("SMS Inbox (New)") },
+                title = { Text("SMS Inbox V4") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(

@@ -41,10 +41,11 @@ import com.example.compose.jetchat.components.JetchatDrawer
 import com.example.compose.jetchat.core.navigation.DrawerDestination
 import com.example.compose.jetchat.databinding.ContentMainBinding
 import com.example.compose.jetchat.feature.sms.SmsDetailScreen
+import com.example.compose.jetchat.feature.sms.SmsDetailScreenV2
+import com.example.compose.jetchat.feature.sms.SmsDetailScreenV3
+import com.example.compose.jetchat.feature.sms.SmsDetailScreenV4
+import com.example.compose.jetchat.feature.sms.SmsDetailScreenV5
 import com.example.compose.jetchat.feature.sms.SmsListScreen
-import com.example.compose.jetchat.feature.sms.SmsListScreenV2
-import com.example.compose.jetchat.feature.sms.SmsListScreenV3
-import com.example.compose.jetchat.feature.sms.SmsListScreenV4
 import com.example.compose.jetchat.feature.sms.SmsListScreenV5
 import kotlinx.coroutines.launch
 
@@ -155,18 +156,18 @@ class NavActivity : AppCompatActivity() {
                                 }
                             }
 
-                            DrawerDestination.SmsV2 -> {   // NEW LIST
+                            DrawerDestination.SmsV2 -> {   // OLD LIST
                                 if (selectedSmsAddress == null) {
-                                    SmsListScreenV2(
+                                    SmsListScreen(
                                         onBack = {
                                             selectedDestination = DrawerDestination.Composers
                                         },
-                                        onConversationClick = { mobile ->
-                                            selectedSmsAddress = mobile
+                                        onSmsClick = { group ->
+                                            selectedSmsAddress = group.mobile
                                         }
                                     )
                                 } else {
-                                    SmsDetailScreen(
+                                    SmsDetailScreenV2(
                                         mobile = selectedSmsAddress!!,
                                         onBack = {
                                             selectedSmsAddress = null
@@ -175,58 +176,18 @@ class NavActivity : AppCompatActivity() {
                                 }
                             }
 
-                            DrawerDestination.SmsV3 -> {   // NEW LIST
-                                if (selectedSmsAddress == null) {
-                                    SmsListScreenV3(
-                                        onBack = {
-                                            selectedDestination = DrawerDestination.Composers
-                                        },
-                                        onConversationClick = { mobile ->
-                                            selectedSmsAddress = mobile
-                                        }
-                                    )
-                                } else {
-                                    SmsDetailScreen(
-                                        mobile = selectedSmsAddress!!,
-                                        onBack = {
-                                            selectedSmsAddress = null
-                                        }
-                                    )
-                                }
-                            }
-
-                            DrawerDestination.SmsV4 -> {   // NEW LIST
-                                if (selectedSmsAddress == null) {
-                                    SmsListScreenV4(
-                                        onBack = {
-                                            selectedDestination = DrawerDestination.Composers
-                                        },
-                                        onConversationClick = { mobile ->
-                                            selectedSmsAddress = mobile
-                                        }
-                                    )
-                                } else {
-                                    SmsDetailScreen(
-                                        mobile = selectedSmsAddress!!,
-                                        onBack = {
-                                            selectedSmsAddress = null
-                                        }
-                                    )
-                                }
-                            }
-
-                            DrawerDestination.SmsV5 -> {   // NEW LIST
+                            DrawerDestination.SmsV5 -> {   // OLD LIST
                                 if (selectedSmsAddress == null) {
                                     SmsListScreenV5(
                                         onBack = {
                                             selectedDestination = DrawerDestination.Composers
                                         },
-                                        onConversationClick = { mobile ->
-                                            selectedSmsAddress = mobile
+                                        onSmsClick = { group ->
+                                            selectedSmsAddress = group.mobile
                                         }
                                     )
                                 } else {
-                                    SmsDetailScreen(
+                                    SmsDetailScreenV5(
                                         mobile = selectedSmsAddress!!,
                                         onBack = {
                                             selectedSmsAddress = null
