@@ -10,8 +10,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -32,6 +35,9 @@ fun SmsListScreenV4(
     var hasPermission by remember { mutableStateOf<Boolean?>(null) }
     var smsList by remember { mutableStateOf<List<SmsGroup>>(emptyList()) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    // 🔍 search query (survives rotation like other state)
+    var query by rememberSaveable { mutableStateOf("") }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -109,17 +115,73 @@ fun SmsListScreenV4(
                 }
 
                 else -> {
-                    LazyColumn(
+                    // ✅ We have SMS → show search + filtered list
+                    Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(horizontal = 8.dp, vertical = 4.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
-                        items(smsList, key = { it.mobile }) { sms ->
-                            SmsCard(
-                                group = sms,
-                                onClick = { onSmsClick(sms) }
-                            )
+                        // 🔍 Search bar
+                        OutlinedTextField(
+                            value = query,
+                            onValueChange = { query = it },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 8.dp),
+                            singleLine = true,
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Search,
+                                    contentDescription = "Search"
+                                )
+                            },
+                            trailingIcon = {
+                                if (query.isNotBlank()) {
+                                    IconButton(onClick = { query = "" }) {
+                                        Icon(
+                                            imageVector = Icons.Default.Clear,
+                                            contentDescription = "Clear search"
+                                        )
+                                    }
+                                }
+                            },
+                            placeholder = {
+                                Text("Search by number or message")
+                            }
+                        )
+
+                        // Filtered list based on query
+                        val filteredList = if (query.isBlank()) {
+                            smsList
+                        } else {
+                            val q = query.trim()
+                            smsList.filter { group ->
+                                group.mobile.contains(q, ignoreCase = true) ||
+                                        group.lastMessage.contains(q, ignoreCase = true)
+                            }
+                        }
+
+                        if (filteredList.isEmpty()) {
+                            Box(
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                Text(
+                                    text = "No results for \"$query\"",
+                                    modifier = Modifier.align(Alignment.Center)
+                                )
+                            }
+                        } else {
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize(),
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                items(filteredList, key = { it.mobile }) { sms ->
+                                    SmsCard(
+                                        group = sms,
+                                        onClick = { onSmsClick(sms) }
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -133,6 +195,10 @@ private fun SmsCard(
     group: SmsGroup,
     onClick: () -> Unit
 ) {
+    // You can change this if you have a displayName in SmsGroup
+    val title = group.mobile
+    val initial = title.firstOrNull()?.toString()?.uppercase() ?: "?"
+
     Surface(
         tonalElevation = 1.dp,
         shadowElevation = 2.dp,
@@ -141,39 +207,59 @@ private fun SmsCard(
             .fillMaxWidth()
             .clickable(onClick = onClick)
     ) {
-        Column(
-            modifier = Modifier.padding(12.dp)
+        Row(
+            modifier = Modifier
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
+            // Avatar
+            Surface(
+                shape = MaterialTheme.shapes.large,
+                color = MaterialTheme.colorScheme.primaryContainer,
+                tonalElevation = 2.dp,
+                modifier = Modifier.size(40.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Text(
+                        text = initial,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            // Sender + count
+            Column(
+                modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = if (group.messageCount > 1)
-                        "${group.mobile} (${group.messageCount})"
-                    else group.mobile,
+                    text = title,
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.SemiBold
                     )
                 )
 
+                // e.g. "3 messages"
                 Text(
-                    text = formatTime(group.lastTimestamp),
-                    style = MaterialTheme.typography.labelSmall
+                    text = if (group.messageCount == 1)
+                        "1 message"
+                    else
+                        "${group.messageCount} messages",
+                    style = MaterialTheme.typography.bodySmall
                 )
             }
 
-            Spacer(modifier = Modifier.height(4.dp))
-
+            // Time on the right
             Text(
-                text = group.lastMessage,
-                style = MaterialTheme.typography.bodyMedium,
-                maxLines = 3
+                text = formatTime(group.lastTimestamp),
+                style = MaterialTheme.typography.labelSmall
             )
         }
     }
 }
+
 
 private fun formatTime(ts: Long): String {
     if (ts == 0L) return ""

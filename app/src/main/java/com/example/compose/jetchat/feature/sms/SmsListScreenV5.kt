@@ -74,7 +74,7 @@ fun SmsListScreenV5(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = "SMS Inbox V5") },
+                title = { Text(text = "SMS Inbox Search") },
                 navigationIcon = {
                     if (onBack != null) {
                         IconButton(onClick = onBack) {
