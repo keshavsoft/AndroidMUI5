@@ -40,15 +40,15 @@ import androidx.navigation.fragment.NavHostFragment
 import com.example.compose.jetchat.components.JetchatDrawer
 import com.example.compose.jetchat.core.navigation.DrawerDestination
 import com.example.compose.jetchat.databinding.ContentMainBinding
-import kotlinx.coroutines.launch
+import com.example.compose.jetchat.feature.sms.SmsDetailScreen
 import com.example.compose.jetchat.feature.sms.SmsListScreen
+import kotlinx.coroutines.launch
 
 /**
  * Main activity for the app.
  */
-
-
 class NavActivity : AppCompatActivity() {
+
     private val viewModel: MainViewModel by viewModels()
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -65,10 +65,13 @@ class NavActivity : AppCompatActivity() {
                     val drawerState = rememberDrawerState(initialValue = Closed)
                     val drawerOpen by viewModel.drawerShouldBeOpened.collectAsStateWithLifecycle()
 
-                    // 🔥 PLACE STEP-1 HERE: selectedDestination state
+                    // Which drawer item is currently selected
                     var selectedDestination by remember {
                         mutableStateOf<DrawerDestination>(DrawerDestination.Composers)
                     }
+
+                    // Which SMS thread is open in detail (null = show list)
+                    var selectedSmsAddress by remember { mutableStateOf<String?>(null) }
 
                     val scope = rememberCoroutineScope()
 
@@ -82,12 +85,12 @@ class NavActivity : AppCompatActivity() {
                         }
                     }
 
-                    // 👉 HERE starts the drawer + navigation logic
                     JetchatDrawer(
                         drawerState = drawerState,
                         selectedMenu = selectedDestination.key,
                         onChatClicked = { key ->
                             scope.launch { drawerState.close() }
+
                             val destination = DrawerDestination.fromKey(key)
 
                             when (destination) {
@@ -95,20 +98,29 @@ class NavActivity : AppCompatActivity() {
                                     findNavController().popBackStack(R.id.nav_newchat, false)
                                     findNavController().navigate(R.id.nav_newchat)
                                 }
+
                                 DrawerDestination.Gps -> {
                                     findNavController().popBackStack(R.id.nav_gps, false)
                                     findNavController().navigate(R.id.nav_gps)
                                 }
+
                                 DrawerDestination.Sms -> {
-                                    // Screen handled below
+                                    // SMS handled in the composable content below
                                 }
+
                                 else -> {
+                                    // Default home / composers
                                     findNavController().popBackStack(R.id.nav_home, false)
                                     findNavController().navigate(R.id.nav_home)
                                 }
                             }
 
                             selectedDestination = destination
+
+                            // If we left SMS section, clear SMS detail selection
+                            if (destination != DrawerDestination.Sms) {
+                                selectedSmsAddress = null
+                            }
                         },
                         onProfileClicked = { userId ->
                             val bundle = bundleOf("userId" to userId)
@@ -118,10 +130,30 @@ class NavActivity : AppCompatActivity() {
                     ) {
                         // 🔥 Screen switching section
                         if (selectedDestination is DrawerDestination.Sms) {
-                            SmsListScreen(onBack = {
-                                selectedDestination = DrawerDestination.Composers
-                            })
+                            if (selectedSmsAddress == null) {
+                                // 📋 SMS list screen
+                                SmsListScreen(
+                                    onBack = {
+                                        // Back from SMS list → go to main chat
+                                        selectedDestination = DrawerDestination.Composers
+                                    },
+                                    onSmsClick = { group ->
+                                        // Open detail for this mobile
+                                        selectedSmsAddress = group.mobile
+                                    }
+                                )
+                            } else {
+                                // 💬 SMS detail screen (conversation)
+                                SmsDetailScreen(
+                                    mobile = selectedSmsAddress!!,
+                                    onBack = {
+                                        // Back from detail → go to list
+                                        selectedSmsAddress = null
+                                    }
+                                )
+                            }
                         } else {
+                            // Default behavior: show Fragment NavHost content
                             AndroidViewBinding(ContentMainBinding::inflate)
                         }
                     }

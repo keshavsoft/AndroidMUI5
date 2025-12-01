@@ -37,4 +37,36 @@ object SmsRepository {
             )
         }.sortedByDescending { it.lastTimestamp }
     }
+
+    // ⭐ NEW: all messages for a specific address (conversation)
+    fun getMessagesForAddress(context: Context, address: String): List<SmsMessage> {
+        val messages = mutableListOf<SmsMessage>()
+
+        // Using content://sms to include inbox (and optionally others)
+        val cursor = context.contentResolver.query(
+            Uri.parse("content://sms"),
+            arrayOf("address", "body", "date"),
+            "address = ?",
+            arrayOf(address),
+            "date ASC" // oldest first -> nice chat flow
+        )
+
+        cursor?.use {
+            while (it.moveToNext()) {
+                val addr = it.getString(it.getColumnIndexOrThrow("address"))
+                val body = it.getString(it.getColumnIndexOrThrow("body"))
+                val date = it.getLong(it.getColumnIndexOrThrow("date"))
+
+                messages.add(
+                    SmsMessage(
+                        address = addr,
+                        body = body,
+                        timestamp = date
+                    )
+                )
+            }
+        }
+
+        return messages
+    }
 }

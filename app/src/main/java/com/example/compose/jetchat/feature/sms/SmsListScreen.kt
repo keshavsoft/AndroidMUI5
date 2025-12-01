@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -23,7 +24,8 @@ import java.util.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SmsListScreen(
-    onBack: (() -> Unit)? = null
+    onBack: (() -> Unit)? = null,
+    onSmsClick: (SmsGroup) -> Unit
 ) {
     val context = LocalContext.current
 
@@ -65,7 +67,7 @@ fun SmsListScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(                               // ⬅️ use TopAppBar instead of SmallTopAppBar
+            TopAppBar(
                 title = { Text(text = "SMS Inbox") },
                 navigationIcon = {
                     if (onBack != null) {
@@ -114,7 +116,10 @@ fun SmsListScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         items(smsList, key = { it.mobile }) { sms ->
-                            SmsCard(sms)
+                            SmsCard(
+                                group = sms,
+                                onClick = { onSmsClick(sms) }
+                            )
                         }
                     }
                 }
@@ -124,12 +129,17 @@ fun SmsListScreen(
 }
 
 @Composable
-private fun SmsCard(group: SmsGroup) {
+private fun SmsCard(
+    group: SmsGroup,
+    onClick: () -> Unit
+) {
     Surface(
         tonalElevation = 1.dp,
         shadowElevation = 2.dp,
         shape = MaterialTheme.shapes.large,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
     ) {
         Column(
             modifier = Modifier.padding(12.dp)
