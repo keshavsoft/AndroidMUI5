@@ -42,6 +42,7 @@ import com.example.compose.jetchat.core.navigation.DrawerDestination
 import com.example.compose.jetchat.databinding.ContentMainBinding
 import com.example.compose.jetchat.feature.sms.SmsDetailScreen
 import com.example.compose.jetchat.feature.sms.SmsListScreen
+import com.example.compose.jetchat.feature.sms.SmsListScreenV2
 import kotlinx.coroutines.launch
 
 /**
@@ -129,33 +130,53 @@ class NavActivity : AppCompatActivity() {
                         }
                     ) {
                         // 🔥 Screen switching section
-                        if (selectedDestination is DrawerDestination.Sms) {
-                            if (selectedSmsAddress == null) {
-                                // 📋 SMS list screen
-                                SmsListScreen(
-                                    onBack = {
-                                        // Back from SMS list → go to main chat
-                                        selectedDestination = DrawerDestination.Composers
-                                    },
-                                    onSmsClick = { group ->
-                                        // Open detail for this mobile
-                                        selectedSmsAddress = group.mobile
-                                    }
-                                )
-                            } else {
-                                // 💬 SMS detail screen (conversation)
-                                SmsDetailScreen(
-                                    mobile = selectedSmsAddress!!,
-                                    onBack = {
-                                        // Back from detail → go to list
-                                        selectedSmsAddress = null
-                                    }
-                                )
+                        when (selectedDestination) {
+
+                            DrawerDestination.Sms -> {   // OLD LIST
+                                if (selectedSmsAddress == null) {
+                                    SmsListScreen(
+                                        onBack = {
+                                            selectedDestination = DrawerDestination.Composers
+                                        },
+                                        onSmsClick = { group ->
+                                            selectedSmsAddress = group.mobile
+                                        }
+                                    )
+                                } else {
+                                    SmsDetailScreen(
+                                        mobile = selectedSmsAddress!!,
+                                        onBack = {
+                                            selectedSmsAddress = null
+                                        }
+                                    )
+                                }
                             }
-                        } else {
-                            // Default behavior: show Fragment NavHost content
-                            AndroidViewBinding(ContentMainBinding::inflate)
+
+                            DrawerDestination.SmsV1 -> {   // NEW LIST
+                                if (selectedSmsAddress == null) {
+                                    SmsListScreenV2(
+                                        onBack = {
+                                            selectedDestination = DrawerDestination.Composers
+                                        },
+                                        onConversationClick = { mobile ->
+                                            selectedSmsAddress = mobile
+                                        }
+                                    )
+                                } else {
+                                    SmsDetailScreen(
+                                        mobile = selectedSmsAddress!!,
+                                        onBack = {
+                                            selectedSmsAddress = null
+                                        }
+                                    )
+                                }
+                            }
+
+                            else -> {
+                                AndroidViewBinding(ContentMainBinding::inflate)
+                            }
                         }
+
                     }
                 }
             }

@@ -82,7 +82,8 @@ fun JetchatDrawerContent(
             DrawerDestination.TestByKeshav,
             DrawerDestination.Droidcon,
             DrawerDestination.Gps,
-            DrawerDestination.Sms
+            DrawerDestination.Sms,
+            DrawerDestination.SmsV1
         )
 
         chatItems.forEach { dest ->

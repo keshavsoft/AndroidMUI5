@@ -12,6 +12,7 @@ sealed class DrawerDestination(
     data object Droidcon : DrawerDestination("droidcon-nyc", R.string.menu_droidcon)
     data object Gps : DrawerDestination("Gps", R.string.menu_gps)
     data object Sms : DrawerDestination("SMS", R.string.menu_sms)
+    data object SmsV1 : DrawerDestination("SMSV1", R.string.menu_smsV1)
 
     // 🔥 Add this block
     companion object {
@@ -21,6 +22,7 @@ sealed class DrawerDestination(
             Droidcon.key -> Droidcon
             Gps.key -> Gps
             Sms.key -> Sms
+            SmsV1.key -> SmsV1
             else -> Composers
         }
     }

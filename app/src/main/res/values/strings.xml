@@ -76,5 +76,6 @@
     <string name="menu_droidcon">droidcon-nyc</string>
     <string name="menu_gps">Gps</string>
     <string name="menu_sms">SMS Inbox</string>
+    <string name="menu_smsV1">SMS InboxV1</string>
 
 </resources>
