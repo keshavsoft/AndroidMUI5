@@ -70,4 +70,11 @@
     <string name="messages_widget_title">JetChat unread messages</string>
     <string name="add_widget_to_home_page">Add Widget to Home Page</string>
 
+    <!-- res/values/strings.xml -->
+    <string name="menu_composers">composers</string>
+    <string name="menu_testbykeshav">TestbyKeshav</string>
+    <string name="menu_droidcon">droidcon-nyc</string>
+    <string name="menu_gps">Gps</string>
+    <string name="menu_sms">SMS Inbox</string>
+
 </resources>

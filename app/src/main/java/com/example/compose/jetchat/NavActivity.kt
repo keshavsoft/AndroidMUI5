@@ -38,13 +38,16 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.example.compose.jetchat.components.JetchatDrawer
+import com.example.compose.jetchat.core.navigation.DrawerDestination
 import com.example.compose.jetchat.databinding.ContentMainBinding
 import kotlinx.coroutines.launch
-import com.example.compose.jetchat.sms.SmsListScreen
+import com.example.compose.jetchat.feature.sms.SmsListScreen
 
 /**
  * Main activity for the app.
  */
+
+
 class NavActivity : AppCompatActivity() {
     private val viewModel: MainViewModel by viewModels()
 
@@ -58,15 +61,19 @@ class NavActivity : AppCompatActivity() {
             ComposeView(this).apply {
                 consumeWindowInsets = false
                 setContent {
-                    val drawerState = rememberDrawerState(initialValue = Closed)
-                    val drawerOpen by viewModel.drawerShouldBeOpened
-                        .collectAsStateWithLifecycle()
 
-                    var selectedMenu by remember { mutableStateOf("composers") }
+                    val drawerState = rememberDrawerState(initialValue = Closed)
+                    val drawerOpen by viewModel.drawerShouldBeOpened.collectAsStateWithLifecycle()
+
+                    // 🔥 PLACE STEP-1 HERE: selectedDestination state
+                    var selectedDestination by remember {
+                        mutableStateOf<DrawerDestination>(DrawerDestination.Composers)
+                    }
+
+                    val scope = rememberCoroutineScope()
+
                     if (drawerOpen) {
-                        // Open drawer and reset state in VM.
                         LaunchedEffect(Unit) {
-                            // wrap in try-finally to handle interruption whiles opening drawer
                             try {
                                 drawerState.open()
                             } finally {
@@ -75,62 +82,49 @@ class NavActivity : AppCompatActivity() {
                         }
                     }
 
-                    val scope = rememberCoroutineScope()
+                    // 👉 HERE starts the drawer + navigation logic
+                    JetchatDrawer(
+                        drawerState = drawerState,
+                        selectedMenu = selectedDestination.key,
+                        onChatClicked = { key ->
+                            scope.launch { drawerState.close() }
+                            val destination = DrawerDestination.fromKey(key)
 
-                            JetchatDrawer(
-                                drawerState = drawerState,
-                                selectedMenu = selectedMenu,
-                                onChatClicked = { menuKey ->
-                                    scope.launch {
-                                        drawerState.close()
-                                    }
-
-                                    when (menuKey) {
-                                        "TestbyKeshav" -> {
-                                            findNavController().popBackStack(R.id.nav_newchat, false)
-                                            findNavController().navigate(R.id.nav_newchat)
-                                        }
-                                        "Gps" -> {
-                                            findNavController().popBackStack(R.id.nav_gps, false)
-                                            findNavController().navigate(R.id.nav_gps)
-                                        }
-                                        "SMS" -> {
-                                            // For SMS we don't use the fragment NavHost,
-                                            // we just switch the composable below by changing selectedMenu
-                                            // so nothing to navigate here.
-                                        }
-                                        else -> {
-                                            findNavController().popBackStack(R.id.nav_home, false)
-                                            findNavController().navigate(R.id.nav_home)
-                                        }
-                                    }
-
-                                    selectedMenu = menuKey
-                                },
-                                onProfileClicked = {
-                                    val bundle = bundleOf("userId" to it)
-                                    findNavController().navigate(R.id.nav_profile, bundle)
-                                    scope.launch {
-                                        drawerState.close()
-                                    }
-                                    selectedMenu = it
+                            when (destination) {
+                                DrawerDestination.TestByKeshav -> {
+                                    findNavController().popBackStack(R.id.nav_newchat, false)
+                                    findNavController().navigate(R.id.nav_newchat)
                                 }
-                            ) {
-                                // 👇 This is where we show content for each drawer item
-                                if (selectedMenu == "SMS") {
-                                    SmsListScreen(
-                                        onBack = {
-                                            // When back from SMS, go to default chat home
-                                            selectedMenu = "composers"
-                                            findNavController().popBackStack(R.id.nav_home, false)
-                                            findNavController().navigate(R.id.nav_home)
-                                        }
-                                    )
-                                } else {
-                                    AndroidViewBinding(ContentMainBinding::inflate)
+                                DrawerDestination.Gps -> {
+                                    findNavController().popBackStack(R.id.nav_gps, false)
+                                    findNavController().navigate(R.id.nav_gps)
+                                }
+                                DrawerDestination.Sms -> {
+                                    // Screen handled below
+                                }
+                                else -> {
+                                    findNavController().popBackStack(R.id.nav_home, false)
+                                    findNavController().navigate(R.id.nav_home)
                                 }
                             }
 
+                            selectedDestination = destination
+                        },
+                        onProfileClicked = { userId ->
+                            val bundle = bundleOf("userId" to userId)
+                            findNavController().navigate(R.id.nav_profile, bundle)
+                            scope.launch { drawerState.close() }
+                        }
+                    ) {
+                        // 🔥 Screen switching section
+                        if (selectedDestination is DrawerDestination.Sms) {
+                            SmsListScreen(onBack = {
+                                selectedDestination = DrawerDestination.Composers
+                            })
+                        } else {
+                            AndroidViewBinding(ContentMainBinding::inflate)
+                        }
+                    }
                 }
             }
         )

@@ -56,6 +56,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.compose.jetchat.R
+import com.example.compose.jetchat.core.navigation.DrawerDestination
 import com.example.compose.jetchat.data.colleagueProfile
 import com.example.compose.jetchat.data.meProfile
 import com.example.compose.jetchat.theme.JetchatTheme
@@ -73,23 +74,26 @@ fun JetchatDrawerContent(
         Spacer(Modifier.windowInsetsTopHeight(WindowInsets.statusBars))
         DrawerHeader()
         DividerItem()
+
         DrawerItemHeader("Chats")
-        ChatItem("composers", selectedMenu == "composers") {
-            onChatClicked("composers")
+
+        val chatItems = listOf(
+            DrawerDestination.Composers,
+            DrawerDestination.TestByKeshav,
+            DrawerDestination.Droidcon,
+            DrawerDestination.Gps,
+            DrawerDestination.Sms
+        )
+
+        chatItems.forEach { dest ->
+            ChatItem(
+                text = stringResource(id = dest.labelRes),
+                selected = selectedMenu == dest.key
+            ) {
+                onChatClicked(dest.key)
+            }
         }
-        ChatItem("TestbyKeshav", selectedMenu == "TestbyKeshav") {
-            onChatClicked("TestbyKeshav")
-        }
-        ChatItem("droidcon-nyc", selectedMenu == "droidcon-nyc") {
-            onChatClicked("droidcon-nyc")
-        }
-        ChatItem("Gps", selectedMenu == "Gps") {
-            onChatClicked("Gps")
-        }
-        // ⭐ New SMS item
-        ChatItem("SMS Inbox", selectedMenu == "SMS") {
-            onChatClicked("SMS")
-        }
+
 
         DividerItem(modifier = Modifier.padding(horizontal = 28.dp))
         DrawerItemHeader("Recent Profiles")

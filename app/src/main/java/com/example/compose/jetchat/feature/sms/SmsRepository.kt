@@ -1,4 +1,4 @@
-package com.example.compose.jetchat.sms
+package com.example.compose.jetchat.feature.sms
 
 import android.content.Context
 import android.net.Uri
