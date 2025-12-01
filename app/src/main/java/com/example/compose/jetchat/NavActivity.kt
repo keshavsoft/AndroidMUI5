@@ -43,6 +43,9 @@ import com.example.compose.jetchat.databinding.ContentMainBinding
 import com.example.compose.jetchat.feature.sms.SmsDetailScreen
 import com.example.compose.jetchat.feature.sms.SmsListScreen
 import com.example.compose.jetchat.feature.sms.SmsListScreenV2
+import com.example.compose.jetchat.feature.sms.SmsListScreenV3
+import com.example.compose.jetchat.feature.sms.SmsListScreenV4
+import com.example.compose.jetchat.feature.sms.SmsListScreenV5
 import kotlinx.coroutines.launch
 
 /**
@@ -152,9 +155,69 @@ class NavActivity : AppCompatActivity() {
                                 }
                             }
 
-                            DrawerDestination.SmsV1 -> {   // NEW LIST
+                            DrawerDestination.SmsV2 -> {   // NEW LIST
                                 if (selectedSmsAddress == null) {
                                     SmsListScreenV2(
+                                        onBack = {
+                                            selectedDestination = DrawerDestination.Composers
+                                        },
+                                        onConversationClick = { mobile ->
+                                            selectedSmsAddress = mobile
+                                        }
+                                    )
+                                } else {
+                                    SmsDetailScreen(
+                                        mobile = selectedSmsAddress!!,
+                                        onBack = {
+                                            selectedSmsAddress = null
+                                        }
+                                    )
+                                }
+                            }
+
+                            DrawerDestination.SmsV3 -> {   // NEW LIST
+                                if (selectedSmsAddress == null) {
+                                    SmsListScreenV3(
+                                        onBack = {
+                                            selectedDestination = DrawerDestination.Composers
+                                        },
+                                        onConversationClick = { mobile ->
+                                            selectedSmsAddress = mobile
+                                        }
+                                    )
+                                } else {
+                                    SmsDetailScreen(
+                                        mobile = selectedSmsAddress!!,
+                                        onBack = {
+                                            selectedSmsAddress = null
+                                        }
+                                    )
+                                }
+                            }
+
+                            DrawerDestination.SmsV4 -> {   // NEW LIST
+                                if (selectedSmsAddress == null) {
+                                    SmsListScreenV4(
+                                        onBack = {
+                                            selectedDestination = DrawerDestination.Composers
+                                        },
+                                        onConversationClick = { mobile ->
+                                            selectedSmsAddress = mobile
+                                        }
+                                    )
+                                } else {
+                                    SmsDetailScreen(
+                                        mobile = selectedSmsAddress!!,
+                                        onBack = {
+                                            selectedSmsAddress = null
+                                        }
+                                    )
+                                }
+                            }
+
+                            DrawerDestination.SmsV5 -> {   // NEW LIST
+                                if (selectedSmsAddress == null) {
+                                    SmsListScreenV5(
                                         onBack = {
                                             selectedDestination = DrawerDestination.Composers
                                         },
@@ -175,6 +238,7 @@ class NavActivity : AppCompatActivity() {
                             else -> {
                                 AndroidViewBinding(ContentMainBinding::inflate)
                             }
+
                         }
 
                     }

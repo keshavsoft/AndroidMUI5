@@ -77,5 +77,8 @@
     <string name="menu_gps">Gps</string>
     <string name="menu_sms">SMS Inbox</string>
     <string name="menu_smsV1">SMS InboxV1</string>
-
+    <string name="menu_smsV2">SMS InboxV2</string>
+    <string name="menu_smsV3">SMS InboxV3</string>
+    <string name="menu_smsV4">SMS InboxV4</string>
+    <string name="menu_smsV5">SMS InboxV5</string>
 </resources>

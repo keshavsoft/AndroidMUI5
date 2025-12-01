@@ -13,6 +13,10 @@ sealed class DrawerDestination(
     data object Gps : DrawerDestination("Gps", R.string.menu_gps)
     data object Sms : DrawerDestination("SMS", R.string.menu_sms)
     data object SmsV1 : DrawerDestination("SMSV1", R.string.menu_smsV1)
+    data object SmsV2 : DrawerDestination("SMSV2", R.string.menu_smsV2)
+    data object SmsV3 : DrawerDestination("SMSV3", R.string.menu_smsV3)
+    data object SmsV4 : DrawerDestination("SMSV4", R.string.menu_smsV4)
+    data object SmsV5 : DrawerDestination("SMSV5", R.string.menu_smsV5)
 
     // 🔥 Add this block
     companion object {
@@ -23,6 +27,10 @@ sealed class DrawerDestination(
             Gps.key -> Gps
             Sms.key -> Sms
             SmsV1.key -> SmsV1
+            SmsV2.key -> SmsV2
+            SmsV3.key -> SmsV3
+            SmsV4.key -> SmsV4
+            SmsV5.key -> SmsV5
             else -> Composers
         }
     }
