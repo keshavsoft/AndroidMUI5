@@ -4,7 +4,8 @@ data class SmsGroup(
     val mobile: String,
     val lastMessage: String,
     val lastTimestamp: Long,
-    val messageCount: Int
+    val messageCount: Int,
+    val isRead: Boolean = true   // <- new, use true for now
 )
 
 // For detail screen (conversation style)
