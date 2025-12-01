@@ -9,9 +9,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -73,31 +73,52 @@ fun SmsDetailScreen(
 
 @Composable
 private fun SmsBubble(message: SmsMessage) {
-    // For now everything is "received" so align left.
-    // Later, if you read "type" (inbox/sent), you can align right for sent.
+    val isSent = message.isSent
+
     Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Start
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 4.dp),
+        horizontalArrangement = if (isSent) Arrangement.End else Arrangement.Start
     ) {
+        // Different bubble color for sent vs received
+        val bubbleColor = if (isSent) {
+            MaterialTheme.colorScheme.primaryContainer
+        } else {
+            MaterialTheme.colorScheme.secondaryContainer
+        }
+
+        val textColor = if (isSent) {
+            MaterialTheme.colorScheme.onPrimaryContainer
+        } else {
+            MaterialTheme.colorScheme.onSecondaryContainer
+        }
+
         Surface(
             shape = MaterialTheme.shapes.large,
             tonalElevation = 1.dp,
             shadowElevation = 1.dp,
-            color = MaterialTheme.colorScheme.secondaryContainer,
+            color = bubbleColor,
             modifier = Modifier
                 .widthIn(max = 280.dp)
+                .padding(
+                    start = if (isSent) 40.dp else 0.dp,
+                    end = if (isSent) 0.dp else 40.dp
+                )
         ) {
             Column(
                 modifier = Modifier.padding(10.dp)
             ) {
                 Text(
                     text = message.body,
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = textColor
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = formatDetailTime(message.timestamp),
-                    style = MaterialTheme.typography.labelSmall
+                    style = MaterialTheme.typography.labelSmall,
+                    color = textColor.copy(alpha = 0.8f)
                 )
             }
         }

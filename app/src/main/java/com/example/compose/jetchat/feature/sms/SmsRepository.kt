@@ -38,17 +38,16 @@ object SmsRepository {
         }.sortedByDescending { it.lastTimestamp }
     }
 
-    // ⭐ NEW: all messages for a specific address (conversation)
+    // ⭐ Conversation for a specific address (inbox + sent)
     fun getMessagesForAddress(context: Context, address: String): List<SmsMessage> {
         val messages = mutableListOf<SmsMessage>()
 
-        // Using content://sms to include inbox (and optionally others)
         val cursor = context.contentResolver.query(
             Uri.parse("content://sms"),
-            arrayOf("address", "body", "date"),
+            arrayOf("address", "body", "date", "type"), // 👈 include type
             "address = ?",
             arrayOf(address),
-            "date ASC" // oldest first -> nice chat flow
+            "date ASC" // oldest first
         )
 
         cursor?.use {
@@ -56,12 +55,16 @@ object SmsRepository {
                 val addr = it.getString(it.getColumnIndexOrThrow("address"))
                 val body = it.getString(it.getColumnIndexOrThrow("body"))
                 val date = it.getLong(it.getColumnIndexOrThrow("date"))
+                val type = it.getInt(it.getColumnIndexOrThrow("type"))
+
+                val isSent = type == 2 // 1=inbox (received), 2=sent
 
                 messages.add(
                     SmsMessage(
                         address = addr,
                         body = body,
-                        timestamp = date
+                        timestamp = date,
+                        isSent = isSent
                     )
                 )
             }
