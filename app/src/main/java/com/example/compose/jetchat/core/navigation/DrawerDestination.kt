@@ -17,6 +17,7 @@ sealed class DrawerDestination(
     data object SmsV3 : DrawerDestination("SMSV3", R.string.menu_smsV3)
     data object SmsV4 : DrawerDestination("SMSV4", R.string.menu_smsV4)
     data object SmsV5 : DrawerDestination("SMSV5", R.string.menu_smsV5)
+    data object VoiceToText : DrawerDestination("VoiceToText", R.string.menu_VoiceToText)
 
     // 🔥 Add this block
     companion object {
@@ -31,6 +32,7 @@ sealed class DrawerDestination(
             SmsV3.key -> SmsV3
             SmsV4.key -> SmsV4
             SmsV5.key -> SmsV5
+            VoiceToText.key -> VoiceToText
             else -> Composers
         }
     }

@@ -2,3 +2,5 @@
 android material ui for reading sms
 
 sms working perfect
+
+voice to text perfect

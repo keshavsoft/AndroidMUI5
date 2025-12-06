@@ -49,6 +49,9 @@ import com.example.compose.jetchat.feature.sms.SmsListScreen
 import com.example.compose.jetchat.feature.sms.SmsListScreenV3
 import com.example.compose.jetchat.feature.sms.SmsListScreenV4
 import com.example.compose.jetchat.feature.sms.SmsListScreenV5
+import com.example.compose.jetchat.feature.voicetotext.VoiceToTextScreen
+
+
 import kotlinx.coroutines.launch
 
 /**
@@ -236,6 +239,14 @@ class NavActivity : AppCompatActivity() {
                                         }
                                     )
                                 }
+                            }
+
+                            DrawerDestination.VoiceToText -> {
+                                VoiceToTextScreen(
+                                    onBack = {
+                                        selectedDestination = DrawerDestination.Composers
+                                    }
+                                )
                             }
 
                             else -> {

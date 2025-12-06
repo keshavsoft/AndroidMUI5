@@ -87,7 +87,8 @@ fun JetchatDrawerContent(
             DrawerDestination.SmsV2,
                     DrawerDestination.SmsV3,
                     DrawerDestination.SmsV4,
-                    DrawerDestination.SmsV5
+                    DrawerDestination.SmsV5,
+            DrawerDestination.VoiceToText
         )
 
         chatItems.forEach { dest ->
