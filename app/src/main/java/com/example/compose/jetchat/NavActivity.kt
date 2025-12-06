@@ -50,6 +50,8 @@ import com.example.compose.jetchat.feature.sms.SmsListScreenV5
 import com.example.compose.jetchat.feature.voicetotextV1.VoiceToTextScreenV1
 import com.example.compose.jetchat.feature.voicetotext.VoiceToTextScreenV2
 import com.example.compose.jetchat.feature.voicetotext.VoiceToTextScreenV3
+import com.example.compose.jetchat.feature.voicetotext.VoiceToTextScreenV4
+import com.example.compose.jetchat.feature.voicetotext.VoiceToTextScreenV5
 
 
 import kotlinx.coroutines.launch
@@ -259,6 +261,22 @@ class NavActivity : AppCompatActivity() {
 
                             DrawerDestination.VoiceToTextV3 -> {
                                 VoiceToTextScreenV3(
+                                    onBack = {
+                                        selectedDestination = DrawerDestination.Composers
+                                    }
+                                )
+                            }
+
+                            DrawerDestination.VoiceToTextV4 -> {
+                                VoiceToTextScreenV4(
+                                    onBack = {
+                                        selectedDestination = DrawerDestination.Composers
+                                    }
+                                )
+                            }
+
+                            DrawerDestination.VoiceToTextV5 -> {
+                                VoiceToTextScreenV5(
                                     onBack = {
                                         selectedDestination = DrawerDestination.Composers
                                     }

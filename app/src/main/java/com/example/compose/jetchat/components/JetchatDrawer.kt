@@ -128,7 +128,10 @@ fun JetchatDrawerContent(
                 DrawerDestination.VoiceToTextV1,
                         DrawerDestination.VoiceToTextV2,
                 DrawerDestination.VoiceToTextV3,
-                        DrawerDestination.VoiceToTextV4
+                        DrawerDestination.VoiceToTextV4,
+                DrawerDestination.VoiceToTextV5,
+                        DrawerDestination.VoiceToTextV6,
+                DrawerDestination.VoiceToTextV7
                 // later: VoiceToTextV2, VoiceToTextV3...
             )
 

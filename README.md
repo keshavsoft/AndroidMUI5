@@ -27,3 +27,5 @@ It provides smooth SMS reading functionality along with fast and accurate voice-
 ## 📂 Project Structure
 
 V3 speech nice
+
+V5 speech crud

@@ -85,4 +85,10 @@
     <string name="menu_VoiceToTextV2">V2</string>
     <string name="menu_VoiceToTextV3">V3</string>
     <string name="menu_VoiceToTextV4">V4</string>
+    <string name="menu_VoiceToTextV5">V5</string>
+    <string name="menu_VoiceToTextV6">V6</string>
+    <string name="menu_VoiceToTextV7">V7</string>
+    <string name="menu_VoiceToTextV8">V8</string>
+    <string name="menu_VoiceToTextV9">V9</string>
+
 </resources>
