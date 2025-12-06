@@ -42,14 +42,14 @@ import com.example.compose.jetchat.core.navigation.DrawerDestination
 import com.example.compose.jetchat.databinding.ContentMainBinding
 import com.example.compose.jetchat.feature.sms.SmsDetailScreen
 import com.example.compose.jetchat.feature.sms.SmsDetailScreenV2
-import com.example.compose.jetchat.feature.sms.SmsDetailScreenV3
-import com.example.compose.jetchat.feature.sms.SmsDetailScreenV4
 import com.example.compose.jetchat.feature.sms.SmsDetailScreenV5
 import com.example.compose.jetchat.feature.sms.SmsListScreen
 import com.example.compose.jetchat.feature.sms.SmsListScreenV3
 import com.example.compose.jetchat.feature.sms.SmsListScreenV4
 import com.example.compose.jetchat.feature.sms.SmsListScreenV5
-import com.example.compose.jetchat.feature.voicetotext.VoiceToTextScreen
+import com.example.compose.jetchat.feature.voicetotextV1.VoiceToTextScreenV1
+import com.example.compose.jetchat.feature.voicetotext.VoiceToTextScreenV2
+import com.example.compose.jetchat.feature.voicetotext.VoiceToTextScreenV3
 
 
 import kotlinx.coroutines.launch
@@ -241,8 +241,24 @@ class NavActivity : AppCompatActivity() {
                                 }
                             }
 
-                            DrawerDestination.VoiceToText -> {
-                                VoiceToTextScreen(
+                            DrawerDestination.VoiceToTextV1 -> {
+                                VoiceToTextScreenV1(
+                                    onBack = {
+                                        selectedDestination = DrawerDestination.Composers
+                                    }
+                                )
+                            }
+
+                            DrawerDestination.VoiceToTextV2 -> {
+                                VoiceToTextScreenV2(
+                                    onBack = {
+                                        selectedDestination = DrawerDestination.Composers
+                                    }
+                                )
+                            }
+
+                            DrawerDestination.VoiceToTextV3 -> {
+                                VoiceToTextScreenV3(
                                     onBack = {
                                         selectedDestination = DrawerDestination.Composers
                                     }

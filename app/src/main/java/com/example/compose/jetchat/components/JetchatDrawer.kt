@@ -1,19 +1,3 @@
-/*
- * Copyright 2020 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.example.compose.jetchat.components
 
 import android.appwidget.AppWidgetManager
@@ -39,12 +23,19 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment.Companion.CenterStart
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
@@ -68,6 +59,10 @@ fun JetchatDrawerContent(
     onChatClicked: (String) -> Unit,
     selectedMenu: String = "composers"
 ) {
+    // Collapsed / expanded state for groups
+    var smsExpanded by remember { mutableStateOf(false) }
+    var voiceExpanded by remember { mutableStateOf(false) }
+
     // Use windowInsetsTopHeight() to add a spacer which pushes the drawer content
     // below the status bar (y-axis)
     Column {
@@ -75,23 +70,17 @@ fun JetchatDrawerContent(
         DrawerHeader()
         DividerItem()
 
+        // ----- Main chats -----
         DrawerItemHeader("Chats")
 
-        val chatItems = listOf(
+        val mainChatItems = listOf(
             DrawerDestination.Composers,
             DrawerDestination.TestByKeshav,
             DrawerDestination.Droidcon,
-            DrawerDestination.Gps,
-            DrawerDestination.Sms,
-            DrawerDestination.SmsV1,
-            DrawerDestination.SmsV2,
-                    DrawerDestination.SmsV3,
-                    DrawerDestination.SmsV4,
-                    DrawerDestination.SmsV5,
-            DrawerDestination.VoiceToText
+            DrawerDestination.Gps
         )
 
-        chatItems.forEach { dest ->
+        mainChatItems.forEach { dest ->
             ChatItem(
                 text = stringResource(id = dest.labelRes),
                 selected = selectedMenu == dest.key
@@ -100,8 +89,62 @@ fun JetchatDrawerContent(
             }
         }
 
+        // ----- SMS (collapsible) -----
+        ExpandableHeader(
+            title = "SMS",
+            expanded = smsExpanded,
+            onClick = { smsExpanded = !smsExpanded }
+        )
+
+        if (smsExpanded) {
+            val smsItems = listOf(
+                DrawerDestination.Sms,
+                DrawerDestination.SmsV1,
+                DrawerDestination.SmsV2,
+                DrawerDestination.SmsV3,
+                DrawerDestination.SmsV4,
+                DrawerDestination.SmsV5
+            )
+
+            smsItems.forEach { dest ->
+                ChatItem(
+                    text = stringResource(id = dest.labelRes),
+                    selected = selectedMenu == dest.key
+                ) {
+                    onChatClicked(dest.key)
+                }
+            }
+        }
+
+        // ----- Voice to Text (collapsible) -----
+        ExpandableHeader(
+            title = "Voice to Text",
+            expanded = voiceExpanded,
+            onClick = { voiceExpanded = !voiceExpanded }
+        )
+
+        if (voiceExpanded) {
+            val voiceItems = listOf(
+                DrawerDestination.VoiceToTextV1,
+                        DrawerDestination.VoiceToTextV2,
+                DrawerDestination.VoiceToTextV3,
+                        DrawerDestination.VoiceToTextV4
+                // later: VoiceToTextV2, VoiceToTextV3...
+            )
+
+            voiceItems.forEach { dest ->
+                ChatItem(
+                    text = stringResource(id = dest.labelRes),
+                    selected = selectedMenu == dest.key
+                ) {
+                    onChatClicked(dest.key)
+                }
+            }
+        }
 
         DividerItem(modifier = Modifier.padding(horizontal = 28.dp))
+
+        // ----- Profiles -----
         DrawerItemHeader("Recent Profiles")
         ProfileItem(
             "Ali Conors (you)", meProfile.photo,
@@ -115,6 +158,7 @@ fun JetchatDrawerContent(
         ) {
             onProfileClicked(colleagueProfile.userId)
         }
+
         if (widgetAddingIsSupported(LocalContext.current)) {
             DividerItem(modifier = Modifier.padding(horizontal = 28.dp))
             DrawerItemHeader("Settings")
@@ -150,6 +194,37 @@ private fun DrawerItemHeader(text: String) {
             text,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+private fun ExpandableHeader(
+    title: String,
+    expanded: Boolean,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .heightIn(min = 52.dp)
+            .padding(horizontal = 28.dp)
+            .clickable(onClick = onClick),
+        verticalAlignment = CenterVertically
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.weight(1f)
+        )
+        Icon(
+            imageVector = if (expanded) {
+                Icons.Filled.KeyboardArrowDown
+            } else {
+                Icons.Filled.KeyboardArrowRight
+            },
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
@@ -307,5 +382,5 @@ private fun addWidgetToHomeScreen(context: Context) {
 @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.O)
 private fun widgetAddingIsSupported(context: Context): Boolean {
     return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
-        AppWidgetManager.getInstance(context).isRequestPinAppWidgetSupported
+            AppWidgetManager.getInstance(context).isRequestPinAppWidgetSupported
 }
