@@ -166,3 +166,6 @@ res/
  ├── layout/
  ├── values/strings.xml               # Menu labels, VoiceToText versions, etc.
  └── ...
+
+
+V6 started

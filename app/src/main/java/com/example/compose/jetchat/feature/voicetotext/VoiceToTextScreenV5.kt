@@ -23,7 +23,19 @@ import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Stop
-import androidx.compose.material3.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,6 +48,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+
+// NOTE: VoiceBubble data class is defined in VoiceModels.kt and reused here.
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,10 +64,10 @@ fun VoiceToTextScreenV5(onBack: () -> Unit = {}) {
 
     var bubbles by remember { mutableStateOf(listOf<VoiceBubble>()) }
 
-    // State for menu + edit dialog
-    var menuForBubble by remember { mutableStateOf<VoiceBubble?>(null) }
-    var isMenuExpanded by remember { mutableStateOf(false) }
+    // which bubble's 3-dot menu is open (Long? because VoiceBubble.id is Long)
+    var expandedBubbleId by remember { mutableStateOf<Long?>(null) }
 
+    // edit dialog state
     var editingBubble by remember { mutableStateOf<VoiceBubble?>(null) }
     var editText by remember { mutableStateOf("") }
 
@@ -169,7 +183,7 @@ fun VoiceToTextScreenV5(onBack: () -> Unit = {}) {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Voice to Text – V4") },
+                title = { Text("Voice to Text – V5") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -191,7 +205,7 @@ fun VoiceToTextScreenV5(onBack: () -> Unit = {}) {
                                 }
                             }
                             clipboard.setPrimaryClip(
-                                ClipData.newPlainText("VoiceTextV4", fullText)
+                                ClipData.newPlainText("VoiceTextV5", fullText)
                             )
                             Toast.makeText(context, "Copied", Toast.LENGTH_SHORT).show()
                         }
@@ -256,22 +270,45 @@ fun VoiceToTextScreenV5(onBack: () -> Unit = {}) {
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.End
                     ) {
-                        // Bubble itself
+                        // Bubble
                         ChatBubble(text = bubble.text)
 
-                        // Three-dot menu
-                        IconButton(
-                            onClick = {
-                                menuForBubble = bubble
-                                editText = bubble.text
-                                isMenuExpanded = true
-                            },
+                        // 3-dot icon + anchored dropdown
+                        Box(
                             modifier = Modifier.align(Alignment.CenterVertically)
                         ) {
-                            Icon(
-                                imageVector = Icons.Filled.MoreVert,
-                                contentDescription = "Options"
-                            )
+                            IconButton(
+                                onClick = {
+                                    expandedBubbleId = bubble.id
+                                    editText = bubble.text
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.MoreVert,
+                                    contentDescription = "Options"
+                                )
+                            }
+
+                            DropdownMenu(
+                                expanded = expandedBubbleId == bubble.id,
+                                onDismissRequest = { expandedBubbleId = null }
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text("Edit") },
+                                    onClick = {
+                                        expandedBubbleId = null
+                                        editingBubble = bubble
+                                        editText = bubble.text
+                                    }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text("Delete") },
+                                    onClick = {
+                                        bubbles = bubbles.filterNot { it.id == bubble.id }
+                                        expandedBubbleId = null
+                                    }
+                                )
+                            }
                         }
                     }
                 }
@@ -313,31 +350,6 @@ fun VoiceToTextScreenV5(onBack: () -> Unit = {}) {
                         MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-        }
-
-        // Dropdown menu for a specific bubble
-        DropdownMenu(
-            expanded = isMenuExpanded && menuForBubble != null,
-            onDismissRequest = { isMenuExpanded = false }
-        ) {
-            DropdownMenuItem(
-                text = { Text("Edit") },
-                onClick = {
-                    isMenuExpanded = false
-                    editingBubble = menuForBubble
-                    editText = menuForBubble?.text.orEmpty()
-                }
-            )
-            DropdownMenuItem(
-                text = { Text("Delete") },
-                onClick = {
-                    val target = menuForBubble
-                    if (target != null) {
-                        bubbles = bubbles.filterNot { it.id == target.id }
-                    }
-                    isMenuExpanded = false
-                }
-            )
         }
 
         // Edit dialog
@@ -396,6 +408,8 @@ private fun ChatBubble(
     Box(
         modifier = Modifier
             .padding(start = 48.dp, end = 4.dp)
+            // ⭐ limit bubble width so the 3-dot icon always fits
+            .fillMaxWidth(0.8f)   // bubble can use up to 80% of row width
             .clip(
                 RoundedCornerShape(
                     topStart = 16.dp,

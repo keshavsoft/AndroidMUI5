@@ -70,24 +70,6 @@ fun JetchatDrawerContent(
         DrawerHeader()
         DividerItem()
 
-        // ----- Main chats -----
-        DrawerItemHeader("Chats")
-
-        val mainChatItems = listOf(
-            DrawerDestination.Composers,
-            DrawerDestination.TestByKeshav,
-            DrawerDestination.Droidcon,
-            DrawerDestination.Gps
-        )
-
-        mainChatItems.forEach { dest ->
-            ChatItem(
-                text = stringResource(id = dest.labelRes),
-                selected = selectedMenu == dest.key
-            ) {
-                onChatClicked(dest.key)
-            }
-        }
 
         // ----- SMS (collapsible) -----
         ExpandableHeader(
@@ -144,6 +126,26 @@ fun JetchatDrawerContent(
                 }
             }
         }
+
+        // ----- Main chats -----
+        DrawerItemHeader("Chats")
+
+        val mainChatItems = listOf(
+            DrawerDestination.Composers,
+            DrawerDestination.TestByKeshav,
+            DrawerDestination.Droidcon,
+            DrawerDestination.Gps
+        )
+
+        mainChatItems.forEach { dest ->
+            ChatItem(
+                text = stringResource(id = dest.labelRes),
+                selected = selectedMenu == dest.key
+            ) {
+                onChatClicked(dest.key)
+            }
+        }
+
 
         DividerItem(modifier = Modifier.padding(horizontal = 28.dp))
 
