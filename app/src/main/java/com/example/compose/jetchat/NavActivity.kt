@@ -32,6 +32,7 @@ import com.example.compose.jetchat.feature.voicetotext.VoiceToTextScreenV3
 import com.example.compose.jetchat.feature.voicetotext.VoiceToTextScreenV4
 import com.example.compose.jetchat.feature.voicetotext.VoiceToTextScreenV5
 import com.example.compose.jetchat.feature.voicetotext.VoiceToTextScreenV6
+import com.example.compose.jetchat.feature.voicetotext.VoiceToTextScreenV7
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -226,7 +227,8 @@ private fun DrawerDestinationContent(
         DrawerDestination.VoiceToTextV3,
         DrawerDestination.VoiceToTextV4,
         DrawerDestination.VoiceToTextV5,
-        DrawerDestination.VoiceToTextV6 -> {
+        DrawerDestination.VoiceToTextV6,
+        DrawerDestination.VoiceToTextV7-> {
             VoiceToTextSection(
                 destination = selectedDestination,
                 onBackToHome = onBackToHome
@@ -363,6 +365,10 @@ private fun VoiceToTextSection(
 
         DrawerDestination.VoiceToTextV6 -> {
             VoiceToTextScreenV6(onBack = onBackToHome)
+        }
+
+        DrawerDestination.VoiceToTextV7 -> {
+            VoiceToTextScreenV7(onBack = onBackToHome)
         }
 
         else -> Unit
