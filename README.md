@@ -169,3 +169,5 @@ res/
 
 
 V6 started
+
+V6 websocket perfect

@@ -1,19 +1,3 @@
-/*
- * Copyright 2020 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     https://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.example.compose.jetchat
 
 import android.os.Bundle
@@ -24,12 +8,7 @@ import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.material3.DrawerValue.Closed
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.rememberDrawerState
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.viewinterop.AndroidViewBinding
 import androidx.core.os.bundleOf
@@ -53,8 +32,7 @@ import com.example.compose.jetchat.feature.voicetotext.VoiceToTextScreenV3
 import com.example.compose.jetchat.feature.voicetotext.VoiceToTextScreenV4
 import com.example.compose.jetchat.feature.voicetotext.VoiceToTextScreenV5
 import com.example.compose.jetchat.feature.voicetotext.VoiceToTextScreenV6
-
-
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 /**
@@ -77,6 +55,7 @@ class NavActivity : AppCompatActivity() {
 
                     val drawerState = rememberDrawerState(initialValue = Closed)
                     val drawerOpen by viewModel.drawerShouldBeOpened.collectAsStateWithLifecycle()
+                    val scope = rememberCoroutineScope()
 
                     // Which drawer item is currently selected
                     var selectedDestination by remember {
@@ -86,8 +65,7 @@ class NavActivity : AppCompatActivity() {
                     // Which SMS thread is open in detail (null = show list)
                     var selectedSmsAddress by remember { mutableStateOf<String?>(null) }
 
-                    val scope = rememberCoroutineScope()
-
+                    // Open drawer when viewModel asks
                     if (drawerOpen) {
                         LaunchedEffect(Unit) {
                             try {
@@ -106,34 +84,13 @@ class NavActivity : AppCompatActivity() {
 
                             val destination = DrawerDestination.fromKey(key)
 
-                            when (destination) {
-                                DrawerDestination.TestByKeshav -> {
-                                    findNavController().popBackStack(R.id.nav_newchat, false)
-                                    findNavController().navigate(R.id.nav_newchat)
-                                }
-
-                                DrawerDestination.Gps -> {
-                                    findNavController().popBackStack(R.id.nav_gps, false)
-                                    findNavController().navigate(R.id.nav_gps)
-                                }
-
-                                DrawerDestination.Sms -> {
-                                    // SMS handled in the composable content below
-                                }
-
-                                else -> {
-                                    // Default home / composers
-                                    findNavController().popBackStack(R.id.nav_home, false)
-                                    findNavController().navigate(R.id.nav_home)
-                                }
-                            }
-
-                            selectedDestination = destination
-
-                            // If we left SMS section, clear SMS detail selection
-                            if (destination != DrawerDestination.Sms) {
-                                selectedSmsAddress = null
-                            }
+                            handleDrawerDestinationClick(
+                                destination = destination,
+                                scope = scope,
+                                navControllerProvider = { findNavController() },
+                                onDestinationSelected = { selectedDestination = it },
+                                onSmsDetailCleared = { selectedSmsAddress = null }
+                            )
                         },
                         onProfileClicked = { userId ->
                             val bundle = bundleOf("userId" to userId)
@@ -141,163 +98,13 @@ class NavActivity : AppCompatActivity() {
                             scope.launch { drawerState.close() }
                         }
                     ) {
-                        // 🔥 Screen switching section
-                        when (selectedDestination) {
-
-                            DrawerDestination.Sms -> {   // OLD LIST
-                                if (selectedSmsAddress == null) {
-                                    SmsListScreen(
-                                        onBack = {
-                                            selectedDestination = DrawerDestination.Composers
-                                        },
-                                        onSmsClick = { group ->
-                                            selectedSmsAddress = group.mobile
-                                        }
-                                    )
-                                } else {
-                                    SmsDetailScreen(
-                                        mobile = selectedSmsAddress!!,
-                                        onBack = {
-                                            selectedSmsAddress = null
-                                        }
-                                    )
-                                }
-                            }
-
-                            DrawerDestination.SmsV2 -> {   // OLD LIST
-                                if (selectedSmsAddress == null) {
-                                    SmsListScreen(
-                                        onBack = {
-                                            selectedDestination = DrawerDestination.Composers
-                                        },
-                                        onSmsClick = { group ->
-                                            selectedSmsAddress = group.mobile
-                                        }
-                                    )
-                                } else {
-                                    SmsDetailScreenV2(
-                                        mobile = selectedSmsAddress!!,
-                                        onBack = {
-                                            selectedSmsAddress = null
-                                        }
-                                    )
-                                }
-                            }
-
-                            DrawerDestination.SmsV3 -> {   // OLD LIST
-                                if (selectedSmsAddress == null) {
-                                    SmsListScreenV3(
-                                        onBack = {
-                                            selectedDestination = DrawerDestination.Composers
-                                        },
-                                        onSmsClick = { group ->
-                                            selectedSmsAddress = group.mobile
-                                        }
-                                    )
-                                } else {
-                                    SmsDetailScreen(
-                                        mobile = selectedSmsAddress!!,
-                                        onBack = {
-                                            selectedSmsAddress = null
-                                        }
-                                    )
-                                }
-                            }
-
-                            DrawerDestination.SmsV4 -> {   // OLD LIST
-                                if (selectedSmsAddress == null) {
-                                    SmsListScreenV4(
-                                        onBack = {
-                                            selectedDestination = DrawerDestination.Composers
-                                        },
-                                        onSmsClick = { group ->
-                                            selectedSmsAddress = group.mobile
-                                        }
-                                    )
-                                } else {
-                                    SmsDetailScreen(
-                                        mobile = selectedSmsAddress!!,
-                                        onBack = {
-                                            selectedSmsAddress = null
-                                        }
-                                    )
-                                }
-                            }
-
-                            DrawerDestination.SmsV5 -> {   // OLD LIST
-                                if (selectedSmsAddress == null) {
-                                    SmsListScreenV5(
-                                        onBack = {
-                                            selectedDestination = DrawerDestination.Composers
-                                        },
-                                        onSmsClick = { group ->
-                                            selectedSmsAddress = group.mobile
-                                        }
-                                    )
-                                } else {
-                                    SmsDetailScreenV5(
-                                        mobile = selectedSmsAddress!!,
-                                        onBack = {
-                                            selectedSmsAddress = null
-                                        }
-                                    )
-                                }
-                            }
-
-                            DrawerDestination.VoiceToTextV1 -> {
-                                VoiceToTextScreenV1(
-                                    onBack = {
-                                        selectedDestination = DrawerDestination.Composers
-                                    }
-                                )
-                            }
-
-                            DrawerDestination.VoiceToTextV2 -> {
-                                VoiceToTextScreenV2(
-                                    onBack = {
-                                        selectedDestination = DrawerDestination.Composers
-                                    }
-                                )
-                            }
-
-                            DrawerDestination.VoiceToTextV3 -> {
-                                VoiceToTextScreenV3(
-                                    onBack = {
-                                        selectedDestination = DrawerDestination.Composers
-                                    }
-                                )
-                            }
-
-                            DrawerDestination.VoiceToTextV4 -> {
-                                VoiceToTextScreenV4(
-                                    onBack = {
-                                        selectedDestination = DrawerDestination.Composers
-                                    }
-                                )
-                            }
-
-                            DrawerDestination.VoiceToTextV5 -> {
-                                VoiceToTextScreenV5(
-                                    onBack = {
-                                        selectedDestination = DrawerDestination.Composers
-                                    }
-                                )
-                            }
-
-                            DrawerDestination.VoiceToTextV6 -> {
-                                VoiceToTextScreenV6(
-                                    onBack = {
-                                        selectedDestination = DrawerDestination.Composers
-                                    }
-                                )
-                            }
-
-                            else -> {
-                                AndroidViewBinding(ContentMainBinding::inflate)
-                            }
-
-                        }
-
+                        DrawerDestinationContent(
+                            selectedDestination = selectedDestination,
+                            selectedSmsAddress = selectedSmsAddress,
+                            onBackToHome = { selectedDestination = DrawerDestination.Composers },
+                            onSmsAddressSelected = { selectedSmsAddress = it },
+                            onBackFromSmsDetail = { selectedSmsAddress = null }
+                        )
                     }
                 }
             }
@@ -315,5 +122,249 @@ class NavActivity : AppCompatActivity() {
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         return navHostFragment.navController
+    }
+}
+
+/**
+ * Central place to decide what to do when a drawer destination is clicked:
+ * - Some items go to Fragment navigation (home, gps, newchat)
+ * - Some are pure Compose screens (SMS, VoiceToText)
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+private fun handleDrawerDestinationClick(
+    destination: DrawerDestination,
+    scope: CoroutineScope,
+    navControllerProvider: () -> NavController,
+    onDestinationSelected: (DrawerDestination) -> Unit,
+    onSmsDetailCleared: () -> Unit
+) {
+    onDestinationSelected(destination)
+
+    val navController = navControllerProvider()
+
+    val smsDestinations = listOf(
+        DrawerDestination.Sms,
+        DrawerDestination.SmsV2,
+        DrawerDestination.SmsV3,
+        DrawerDestination.SmsV4,
+        DrawerDestination.SmsV5
+    )
+
+    val voiceDestinations = listOf(
+        DrawerDestination.VoiceToTextV1,
+        DrawerDestination.VoiceToTextV2,
+        DrawerDestination.VoiceToTextV3,
+        DrawerDestination.VoiceToTextV4,
+        DrawerDestination.VoiceToTextV5,
+        DrawerDestination.VoiceToTextV6,
+        DrawerDestination.VoiceToTextV7
+    )
+
+    when (destination) {
+        DrawerDestination.TestByKeshav -> {
+            navController.popBackStack(R.id.nav_newchat, false)
+            navController.navigate(R.id.nav_newchat)
+        }
+
+        DrawerDestination.Gps -> {
+            navController.popBackStack(R.id.nav_gps, false)
+            navController.navigate(R.id.nav_gps)
+        }
+
+        in smsDestinations -> {
+            // Handled entirely in Compose; do not touch fragment nav
+        }
+
+        in voiceDestinations -> {
+            // Handled entirely in Compose; do not touch fragment nav
+        }
+
+        else -> {
+            // Default – home / composers
+            navController.popBackStack(R.id.nav_home, false)
+            navController.navigate(R.id.nav_home)
+        }
+    }
+
+    // If we left SMS section, clear SMS detail selection
+    if (destination !in smsDestinations) {
+        onSmsDetailCleared()
+    }
+}
+
+/**
+ * Decides which screen content to show for the currently selected drawer destination.
+ */
+@Composable
+private fun DrawerDestinationContent(
+    selectedDestination: DrawerDestination,
+    selectedSmsAddress: String?,
+    onBackToHome: () -> Unit,
+    onSmsAddressSelected: (String) -> Unit,
+    onBackFromSmsDetail: () -> Unit
+) {
+    when (selectedDestination) {
+
+        // All SMS variants share the same structure (list + detail)
+        DrawerDestination.Sms,
+        DrawerDestination.SmsV2,
+        DrawerDestination.SmsV3,
+        DrawerDestination.SmsV4,
+        DrawerDestination.SmsV5 -> {
+            SmsSection(
+                destination = selectedDestination,
+                selectedSmsAddress = selectedSmsAddress,
+                onBackToHome = onBackToHome,
+                onSmsAddressSelected = onSmsAddressSelected,
+                onBackFromSmsDetail = onBackFromSmsDetail
+            )
+        }
+
+        // Voice to Text variants – simple single-page screens
+        DrawerDestination.VoiceToTextV1,
+        DrawerDestination.VoiceToTextV2,
+        DrawerDestination.VoiceToTextV3,
+        DrawerDestination.VoiceToTextV4,
+        DrawerDestination.VoiceToTextV5,
+        DrawerDestination.VoiceToTextV6 -> {
+            VoiceToTextSection(
+                destination = selectedDestination,
+                onBackToHome = onBackToHome
+            )
+        }
+
+        else -> {
+            // Default: show the original NavHost fragment content
+            AndroidViewBinding(ContentMainBinding::inflate)
+        }
+    }
+}
+
+/**
+ * Handles SMS list + detail flow for all SMS drawer variants.
+ */
+@Composable
+private fun SmsSection(
+    destination: DrawerDestination,
+    selectedSmsAddress: String?,
+    onBackToHome: () -> Unit,
+    onSmsAddressSelected: (String) -> Unit,
+    onBackFromSmsDetail: () -> Unit
+) {
+    val isListScreen = selectedSmsAddress == null
+
+    if (isListScreen) {
+        when (destination) {
+            DrawerDestination.Sms -> {
+                SmsListScreen(
+                    onBack = onBackToHome,
+                    onSmsClick = { group -> onSmsAddressSelected(group.mobile) }
+                )
+            }
+
+            DrawerDestination.SmsV2 -> {
+                SmsListScreen(
+                    onBack = onBackToHome,
+                    onSmsClick = { group -> onSmsAddressSelected(group.mobile) }
+                )
+            }
+
+            DrawerDestination.SmsV3 -> {
+                SmsListScreenV3(
+                    onBack = onBackToHome,
+                    onSmsClick = { group -> onSmsAddressSelected(group.mobile) }
+                )
+            }
+
+            DrawerDestination.SmsV4 -> {
+                SmsListScreenV4(
+                    onBack = onBackToHome,
+                    onSmsClick = { group -> onSmsAddressSelected(group.mobile) }
+                )
+            }
+
+            DrawerDestination.SmsV5 -> {
+                SmsListScreenV5(
+                    onBack = onBackToHome,
+                    onSmsClick = { group -> onSmsAddressSelected(group.mobile) }
+                )
+            }
+
+            else -> Unit
+        }
+    } else {
+        // Detail screens
+        val mobile = selectedSmsAddress!!
+        when (destination) {
+            DrawerDestination.Sms -> {
+                SmsDetailScreen(
+                    mobile = mobile,
+                    onBack = onBackFromSmsDetail
+                )
+            }
+
+            DrawerDestination.SmsV2 -> {
+                SmsDetailScreenV2(
+                    mobile = mobile,
+                    onBack = onBackFromSmsDetail
+                )
+            }
+
+            DrawerDestination.SmsV3,
+            DrawerDestination.SmsV4 -> {
+                // These variants currently reuse SmsDetailScreen in your original code
+                SmsDetailScreen(
+                    mobile = mobile,
+                    onBack = onBackFromSmsDetail
+                )
+            }
+
+            DrawerDestination.SmsV5 -> {
+                SmsDetailScreenV5(
+                    mobile = mobile,
+                    onBack = onBackFromSmsDetail
+                )
+            }
+
+            else -> Unit
+        }
+    }
+}
+
+/**
+ * Handles VoiceToText screens for all implemented V1–V6.
+ * (V7 still falls back to the default content, same as your original code.)
+ */
+@Composable
+private fun VoiceToTextSection(
+    destination: DrawerDestination,
+    onBackToHome: () -> Unit
+) {
+    when (destination) {
+        DrawerDestination.VoiceToTextV1 -> {
+            VoiceToTextScreenV1(onBack = onBackToHome)
+        }
+
+        DrawerDestination.VoiceToTextV2 -> {
+            VoiceToTextScreenV2(onBack = onBackToHome)
+        }
+
+        DrawerDestination.VoiceToTextV3 -> {
+            VoiceToTextScreenV3(onBack = onBackToHome)
+        }
+
+        DrawerDestination.VoiceToTextV4 -> {
+            VoiceToTextScreenV4(onBack = onBackToHome)
+        }
+
+        DrawerDestination.VoiceToTextV5 -> {
+            VoiceToTextScreenV5(onBack = onBackToHome)
+        }
+
+        DrawerDestination.VoiceToTextV6 -> {
+            VoiceToTextScreenV6(onBack = onBackToHome)
+        }
+
+        else -> Unit
     }
 }

@@ -79,12 +79,22 @@ fun VoiceToTextScreenV6(onBack: () -> Unit = {}) {
     }
 
     DisposableEffect(Unit) {
-        onDispose { speechRecognizer?.destroy() }
+        // Connect WebSocket when this screen enters composition
+        VoiceWsClient.connect()
+
+        onDispose {
+            // Cleanup when leaving the screen
+            speechRecognizer?.destroy()
+            VoiceWsClient.close()
+        }
     }
 
     fun addBubbleFromText(text: String) {
         if (text.isBlank()) return
         bubbles = bubbles + VoiceBubble(text = text)
+
+        // Send final recognized text to WebSocket
+        VoiceWsClient.sendFinal(text)
     }
 
     fun startListening() {
@@ -138,6 +148,9 @@ fun VoiceToTextScreenV6(onBack: () -> Unit = {}) {
                 val partial =
                     partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                 partialText = partial?.firstOrNull() ?: ""
+
+                // Send live partial text to WebSocket
+                VoiceWsClient.sendPartial(partialText)
             }
 
             override fun onEvent(eventType: Int, params: Bundle?) {}
