@@ -62,6 +62,7 @@ fun JetchatDrawerContent(
     // Collapsed / expanded state for groups
     var smsExpanded by remember { mutableStateOf(false) }
     var voiceExpanded by remember { mutableStateOf(false) }
+    var chatWsExpanded by remember { mutableStateOf(false) }
 
     // Use windowInsetsTopHeight() to add a spacer which pushes the drawer content
     // below the status bar (y-axis)
@@ -126,6 +127,29 @@ fun JetchatDrawerContent(
                 }
             }
         }
+
+// ----- ChatWs (collapsible) -----
+        ExpandableHeader(
+            title = "ChatWs",
+            expanded = chatWsExpanded,
+            onClick = { chatWsExpanded = !chatWsExpanded }
+        )
+
+        if (chatWsExpanded) {
+            val chatWsItems = listOf(
+                DrawerDestination.ChatWsV1
+            )
+
+            chatWsItems.forEach { dest ->
+                ChatWsItem(
+                    text = stringResource(id = dest.labelRes),
+                    selected = selectedMenu == dest.key
+                ) {
+                    onChatClicked(dest.key)
+                }
+            }
+        }
+
 
         // ----- Main chats -----
         DrawerItemHeader("Chats")
@@ -274,6 +298,49 @@ private fun ChatItem(text: String, selected: Boolean, onChatClicked: () -> Unit)
         )
     }
 }
+
+
+@Composable
+private fun ChatWsItem(text: String, selected: Boolean, onChatClicked: () -> Unit) {
+    val background = if (selected) {
+        Modifier.background(MaterialTheme.colorScheme.primaryContainer)
+    } else {
+        Modifier
+    }
+    Row(
+        modifier = Modifier
+            .height(56.dp)
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp)
+            .clip(CircleShape)
+            .then(background)
+            .clickable(onClick = onChatClicked),
+        verticalAlignment = CenterVertically
+    ) {
+        val iconTint = if (selected) {
+            MaterialTheme.colorScheme.primary
+        } else {
+            MaterialTheme.colorScheme.onSurfaceVariant
+        }
+        Icon(
+            painter = painterResource(id = R.drawable.ic_jetchat),
+            tint = iconTint,
+            modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 16.dp),
+            contentDescription = null
+        )
+        Text(
+            text,
+            style = MaterialTheme.typography.bodyMedium,
+            color = if (selected) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.onSurface
+            },
+            modifier = Modifier.padding(start = 12.dp)
+        )
+    }
+}
+
 
 @Composable
 private fun ProfileItem(

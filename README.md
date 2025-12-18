@@ -173,3 +173,5 @@ V6 started
 V6 websocket perfect
 
 V7 websocket incom perfect
+
+new main menu added for chat

@@ -92,14 +92,21 @@ import androidx.compose.ui.unit.dp
 import com.example.compose.jetchat.FunctionalityNotAvailablePopup
 import com.example.compose.jetchat.R
 import com.example.compose.jetchat.components.JetchatAppBar
+import com.example.compose.jetchat.conversation.JumpToBottom
+import com.example.compose.jetchat.conversation.SymbolAnnotationType
+import com.example.compose.jetchat.conversation.UserInput
+import com.example.compose.jetchat.conversation.UserInputOnly
+import com.example.compose.jetchat.conversation.messageFormatter
 import com.example.compose.jetchat.data.exampleUiState
 import com.example.compose.jetchat.theme.JetchatTheme
 import kotlinx.coroutines.launch
+import com.example.compose.jetchat.feature.chatws.v1.ChatWsUiState
+import com.example.compose.jetchat.feature.chatws.v1.ChatMessage
 
 /**
  * Entry point for a conversation screen.
  *
- * @param uiState [ConversationUiState] that contains messages to display
+ * @param uiState [ChatWsUiState] that contains messages to display
  * @param navigateToProfile User action when navigation to a profile is requested
  * @param modifier [Modifier] to apply to this layout node
  * @param onNavIconPressed Sends an event up when the user clicks on the menu
@@ -107,7 +114,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun ChatWsV1Screen(
-    uiState: ConversationUiState,
+    uiState: ChatWsUiState,
     navigateToProfile: (String) -> Unit,
     modifier: Modifier = Modifier,
     onNavIconPressed: () -> Unit = { }
@@ -126,45 +133,6 @@ fun ChatWsV1Screen(
 
     var borderStroke by remember {
         mutableStateOf(Color.Transparent)
-    }
-
-    val dragAndDropCallback = remember {
-        object : DragAndDropTarget {
-            override fun onDrop(event: DragAndDropEvent): Boolean {
-                val clipData = event.toAndroidDragEvent().clipData
-
-                if (clipData.itemCount < 1) {
-                    return false
-                }
-
-                uiState.addMessage(
-                    Message(authorMe, clipData.getItemAt(0).text.toString(), timeNow)
-                )
-
-                return true
-            }
-
-            override fun onStarted(event: DragAndDropEvent) {
-                super.onStarted(event)
-                borderStroke = Color.Red
-            }
-
-            override fun onEntered(event: DragAndDropEvent) {
-                super.onEntered(event)
-                background = Color.Red.copy(alpha = .3f)
-            }
-
-            override fun onExited(event: DragAndDropEvent) {
-                super.onExited(event)
-                background = Color.Transparent
-            }
-
-            override fun onEnded(event: DragAndDropEvent) {
-                super.onEnded(event)
-                background = Color.Transparent
-                borderStroke = Color.Transparent
-            }
-        }
     }
 
     Scaffold(
@@ -187,13 +155,6 @@ fun ChatWsV1Screen(
             Modifier.fillMaxSize().padding(paddingValues)
                 .background(color = background)
                 .border(width = 2.dp, color = borderStroke)
-                .dragAndDropTarget(shouldStartDragAndDrop = { event ->
-                    event
-                        .mimeTypes()
-                        .contains(
-                            ClipDescription.MIMETYPE_TEXT_PLAIN
-                        )
-                }, target = dragAndDropCallback)
         ) {
             Messages(
                 messages = uiState.messages,
@@ -204,7 +165,11 @@ fun ChatWsV1Screen(
             UserInput(
                 onMessageSent = { content ->
                     uiState.addMessage(
-                        Message(authorMe, content, timeNow)
+                        ChatMessage(
+                            author = authorMe,
+                            content = content,
+                            timestamp = timeNow
+                        )
                     )
                 },
                 resetScroll = {
@@ -212,10 +177,9 @@ fun ChatWsV1Screen(
                         scrollState.scrollToItem(0)
                     }
                 },
-                // let this element handle the padding so that the elevation is shown behind the
-                // navigation bar
                 modifier = Modifier.navigationBarsPadding().imePadding()
             )
+
         }
     }
 }
@@ -223,7 +187,7 @@ fun ChatWsV1Screen(
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun ConversationContentOnly(
-    uiState: ConversationUiState,
+    uiState: ChatWsUiState,
     navigateToProfile: (String) -> Unit,
     modifier: Modifier = Modifier,
     onNavIconPressed: () -> Unit = { }
@@ -254,7 +218,7 @@ fun ConversationContentOnly(
                 }
 
                 uiState.addMessage(
-                    Message(authorMe, clipData.getItemAt(0).text.toString(), timeNow)
+                    ChatMessage(authorMe, clipData.getItemAt(0).text.toString(), timeNow)
                 )
 
                 return true
@@ -320,7 +284,7 @@ fun ConversationContentOnly(
             UserInputOnly(
                 onMessageSent = { content ->
                     uiState.addMessage(
-                        Message(authorMe, content, timeNow)
+                        ChatMessage(authorMe, content, timeNow)
                     )
                 },
                 resetScroll = {
@@ -397,7 +361,7 @@ const val ConversationTestTag = "ConversationTestTag"
 
 @Composable
 fun Messages(
-    messages: List<Message>,
+    messages: List<ChatMessage>,
     navigateToProfile: (String) -> Unit,
     scrollState: LazyListState,
     modifier: Modifier = Modifier
@@ -473,7 +437,7 @@ fun Messages(
 @Composable
 fun Message(
     onAuthorClick: (String) -> Unit,
-    msg: Message,
+    msg: ChatMessage,
     isUserMe: Boolean,
     isFirstMessageByAuthor: Boolean,
     isLastMessageByAuthor: Boolean
@@ -520,7 +484,7 @@ fun Message(
 
 @Composable
 fun AuthorAndTextMessage(
-    msg: Message,
+    msg: ChatMessage,
     isUserMe: Boolean,
     isFirstMessageByAuthor: Boolean,
     isLastMessageByAuthor: Boolean,
@@ -543,7 +507,7 @@ fun AuthorAndTextMessage(
 }
 
 @Composable
-private fun AuthorNameTimestamp(msg: Message) {
+private fun AuthorNameTimestamp(msg: ChatMessage) {
     // Combine author and timestamp for a11y.
     Row(modifier = Modifier.semantics(mergeDescendants = true) {}) {
         Text(
@@ -595,7 +559,7 @@ private fun RowScope.DayHeaderLine() {
 
 @Composable
 fun ChatItemBubble(
-    message: Message,
+    message: ChatMessage,
     isUserMe: Boolean,
     authorClicked: (String) -> Unit
 ) {
@@ -637,7 +601,7 @@ fun ChatItemBubble(
 
 @Composable
 fun ClickableMessage(
-    message: Message,
+    message: ChatMessage,
     isUserMe: Boolean,
     authorClicked: (String) -> Unit
 ) {
@@ -672,8 +636,12 @@ fun ClickableMessage(
 fun ChatWsV1Preview() {
     JetchatTheme {
         ChatWsV1Screen(
-            uiState = exampleUiState,
-            navigateToProfile = { }
+            uiState = ChatWsUiState(
+                channelName = "Chat WS V1",
+                channelMembers = 2,
+                initialMessages = emptyList()
+            ),
+            navigateToProfile = {}
         )
     }
 }
