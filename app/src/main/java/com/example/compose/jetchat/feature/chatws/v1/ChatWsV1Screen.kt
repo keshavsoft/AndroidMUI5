@@ -97,7 +97,7 @@ import com.example.compose.jetchat.conversation.SymbolAnnotationType
 import com.example.compose.jetchat.conversation.UserInput
 import com.example.compose.jetchat.conversation.UserInputOnly
 import com.example.compose.jetchat.conversation.messageFormatter
-import com.example.compose.jetchat.data.exampleUiState
+import com.example.compose.jetchat.data.chatWsV1InitialMessages
 import com.example.compose.jetchat.theme.JetchatTheme
 import kotlinx.coroutines.launch
 import com.example.compose.jetchat.feature.chatws.v1.ChatWsUiState
@@ -113,12 +113,13 @@ import com.example.compose.jetchat.feature.chatws.v1.ChatMessage
  */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
-fun ChatWsV1Screen(
+private fun ChatWsV1Content(
     uiState: ChatWsUiState,
     navigateToProfile: (String) -> Unit,
     modifier: Modifier = Modifier,
     onNavIconPressed: () -> Unit = { }
-) {
+)
+ {
     val authorMe = stringResource(R.string.author_me)
     val timeNow = stringResource(id = R.string.now)
 
@@ -633,24 +634,9 @@ fun ClickableMessage(
 
 @Preview
 @Composable
-fun ChatWsV1Preview() {
-    JetchatTheme {
-        ChatWsV1Screen(
-            uiState = ChatWsUiState(
-                channelName = "Chat WS V1",
-                channelMembers = 2,
-                initialMessages = emptyList()
-            ),
-            navigateToProfile = {}
-        )
-    }
-}
-
-@Preview
-@Composable
 fun ChannelBarPrev() {
     JetchatTheme {
-        ChannelNameBar(channelName = "composers", channelMembers = 52)
+        ChannelNameBar(channelName = "Chat Ws V1", channelMembers = 16)
     }
 }
 
@@ -661,3 +647,22 @@ fun DayHeaderPrev() {
 }
 
 private val JumpToBottomThreshold = 56.dp
+
+@Composable
+fun ChatWsV1Screen(
+    onBack: () -> Unit = {}
+) {
+    val uiState = remember {
+        ChatWsUiState(
+            channelName = "#chat-ws-v1",
+            channelMembers = 42,
+            initialMessages = chatWsV1InitialMessages
+        )
+    }
+
+    ChatWsV1Content(
+        uiState = uiState,
+        navigateToProfile = {},
+        onNavIconPressed = onBack
+    )
+}

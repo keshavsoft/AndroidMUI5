@@ -175,3 +175,5 @@ V6 websocket perfect
 V7 websocket incom perfect
 
 new main menu added for chat
+
+new main menu added for chat and V1 is perfect, not from ws but from fake data

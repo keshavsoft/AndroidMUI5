@@ -19,6 +19,7 @@ import androidx.navigation.fragment.NavHostFragment
 import com.example.compose.jetchat.components.JetchatDrawer
 import com.example.compose.jetchat.core.navigation.DrawerDestination
 import com.example.compose.jetchat.databinding.ContentMainBinding
+import com.example.compose.jetchat.feature.chatws.v1.ChatWsV1Screen
 import com.example.compose.jetchat.feature.sms.SmsDetailScreen
 import com.example.compose.jetchat.feature.sms.SmsDetailScreenV2
 import com.example.compose.jetchat.feature.sms.SmsDetailScreenV5
@@ -161,6 +162,10 @@ private fun handleDrawerDestinationClick(
         DrawerDestination.VoiceToTextV7
     )
 
+    val chatWsDestinations = listOf(
+        DrawerDestination.ChatWsV1
+    )
+
     when (destination) {
         DrawerDestination.TestByKeshav -> {
             navController.popBackStack(R.id.nav_newchat, false)
@@ -177,6 +182,10 @@ private fun handleDrawerDestinationClick(
         }
 
         in voiceDestinations -> {
+            // Handled entirely in Compose; do not touch fragment nav
+        }
+
+        in chatWsDestinations -> {
             // Handled entirely in Compose; do not touch fragment nav
         }
 
@@ -235,6 +244,13 @@ private fun DrawerDestinationContent(
             )
         }
 
+        // Voice to Text variants – simple single-page screens
+        DrawerDestination.ChatWsV1-> {
+            ChatWsSection(
+                destination = selectedDestination,
+                onBackToHome = onBackToHome
+            )
+        }
         else -> {
             // Default: show the original NavHost fragment content
             AndroidViewBinding(ContentMainBinding::inflate)
@@ -369,6 +385,25 @@ private fun VoiceToTextSection(
 
         DrawerDestination.VoiceToTextV7 -> {
             VoiceToTextScreenV7(onBack = onBackToHome)
+        }
+
+        else -> Unit
+    }
+}
+
+
+/**
+ * Handles VoiceToText screens for all implemented V1–V6.
+ * (V7 still falls back to the default content, same as your original code.)
+ */
+@Composable
+private fun ChatWsSection(
+    destination: DrawerDestination,
+    onBackToHome: () -> Unit
+) {
+    when (destination) {
+        DrawerDestination.ChatWsV1 -> {
+            ChatWsV1Screen()
         }
 
         else -> Unit
