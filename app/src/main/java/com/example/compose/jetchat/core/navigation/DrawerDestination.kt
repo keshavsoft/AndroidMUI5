@@ -5,7 +5,8 @@ import com.example.compose.jetchat.R
 
 sealed class DrawerDestination(
     val key: String,
-    @StringRes val labelRes: Int
+    @StringRes val labelRes: Int,
+    val navId: Int? = null   // ✅ ADD THIS
 ) {
     data object Composers : DrawerDestination("composers", R.string.menu_composers)
     data object TestByKeshav : DrawerDestination("TestbyKeshav", R.string.menu_testbykeshav)

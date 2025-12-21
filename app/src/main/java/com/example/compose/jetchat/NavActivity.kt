@@ -55,10 +55,18 @@ class NavActivity : AppCompatActivity() {
             ComposeView(this).apply {
                 consumeWindowInsets = false
                 setContent {
-
                     val drawerState = rememberDrawerState(initialValue = Closed)
+
+
                     val drawerOpen by viewModel.drawerShouldBeOpened.collectAsStateWithLifecycle()
                     val scope = rememberCoroutineScope()
+
+                    LaunchedEffect(drawerOpen) {
+                        if (drawerOpen) {
+                            drawerState.open()
+                            viewModel.resetOpenDrawerAction()
+                        }
+                    }
 
                     // Which drawer item is currently selected
                     var selectedDestination by remember {
@@ -67,17 +75,6 @@ class NavActivity : AppCompatActivity() {
 
                     // Which SMS thread is open in detail (null = show list)
                     var selectedSmsAddress by remember { mutableStateOf<String?>(null) }
-
-                    // Open drawer when viewModel asks
-                    if (drawerOpen) {
-                        LaunchedEffect(Unit) {
-                            try {
-                                drawerState.open()
-                            } finally {
-                                viewModel.resetOpenDrawerAction()
-                            }
-                        }
-                    }
 
                     JetchatDrawer(
                         drawerState = drawerState,
@@ -103,7 +100,7 @@ class NavActivity : AppCompatActivity() {
                         },
                         onProfileClicked = { userId ->
                             val bundle = bundleOf("userId" to userId)
-                            findNavController().navigate(R.id.nav_profile, bundle)
+                            findNavController()?.navigate(R.id.nav_profile, bundle)
                             scope.launch { drawerState.close() }
                         }
                     ) {
@@ -124,17 +121,20 @@ class NavActivity : AppCompatActivity() {
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        return findNavController().navigateUp() || super.onSupportNavigateUp()
+        return findNavController()?.navigateUp() == true || super.onSupportNavigateUp()
     }
+
 
     /**
      * See https://issuetracker.google.com/142847973
      */
-    private fun findNavController(): NavController {
-        val navHostFragment =
-            supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-        return navHostFragment.navController
+    private fun findNavController(): NavController? {
+        val fragment = supportFragmentManager
+            .findFragmentById(R.id.nav_host_fragment)
+
+        return (fragment as? NavHostFragment)?.navController
     }
+
 }
 
 /**
@@ -146,13 +146,14 @@ class NavActivity : AppCompatActivity() {
 private fun handleDrawerDestinationClick(
     destination: DrawerDestination,
     scope: CoroutineScope,
-    navControllerProvider: () -> NavController,
+    navControllerProvider: () -> NavController?,   // ✅ FIX HERE
     onDestinationSelected: (DrawerDestination) -> Unit,
     onSmsDetailCleared: () -> Unit
 ) {
     onDestinationSelected(destination)
 
-    val navController = navControllerProvider()
+    val navController = navControllerProvider() ?: return
+
 
     val smsDestinations = listOf(
         DrawerDestination.Sms,
@@ -200,10 +201,17 @@ private fun handleDrawerDestinationClick(
         }
 
         else -> {
-            // Default – home / composers
-            navController.popBackStack(R.id.nav_home, false)
-            navController.navigate(R.id.nav_home)
+            // Only fragment-based destinations should reach here
+            destination.navId?.let { navId ->
+                navController.popBackStack(
+                    navController.graph.startDestinationId,
+                    false
+                )
+                navController.navigate(navId)
+            }
         }
+
+
     }
 
     // If we left SMS section, clear SMS detail selection
@@ -422,9 +430,7 @@ private fun ChatWsSection(
             ChatWsV1Screen(
                 onNavIconPressed = {
                     scope.launch {
-                        if (!drawerState.isOpen) {
-                            drawerState.open()
-                        }
+                        drawerState.open()
                     }
                 }
             )

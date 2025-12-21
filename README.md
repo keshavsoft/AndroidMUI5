@@ -179,3 +179,5 @@ new main menu added for chat
 new main menu added for chat and V1 is perfect, not from ws but from fake data
 
 ChatWs V1 menu click fixed
+
+menu no crash

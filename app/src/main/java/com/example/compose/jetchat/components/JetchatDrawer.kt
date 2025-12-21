@@ -32,9 +32,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment.Companion.CenterStart
 import androidx.compose.ui.Alignment.Companion.CenterVertically
@@ -60,9 +62,15 @@ fun JetchatDrawerContent(
     selectedMenu: String = "composers"
 ) {
     // Collapsed / expanded state for groups
-    var smsExpanded by remember { mutableStateOf(false) }
-    var voiceExpanded by remember { mutableStateOf(false) }
-    var chatWsExpanded by remember { mutableStateOf(false) }
+    var smsExpanded by rememberSaveable { mutableStateOf(false) }
+    var voiceExpanded by rememberSaveable { mutableStateOf(false) }
+    var chatWsExpanded by rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(selectedMenu) {
+        smsExpanded = selectedMenu.startsWith("sms")
+        voiceExpanded = selectedMenu.startsWith("voice")
+        chatWsExpanded = selectedMenu.startsWith("chatws")
+    }
 
     // Use windowInsetsTopHeight() to add a spacer which pushes the drawer content
     // below the status bar (y-axis)
