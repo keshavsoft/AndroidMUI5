@@ -5,6 +5,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue.Closed
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.rememberDrawerState
@@ -82,9 +83,15 @@ class NavActivity : AppCompatActivity() {
                         drawerState = drawerState,
                         selectedMenu = selectedDestination.key,
                         onChatClicked = { key ->
-                            scope.launch { drawerState.close() }
-
                             val destination = DrawerDestination.fromKey(key)
+
+                            // ✅ prevent crash on re-select
+                            if (destination == selectedDestination) {
+                                scope.launch { drawerState.close() }
+                                return@JetchatDrawer
+                            }
+
+                            scope.launch { drawerState.close() }
 
                             handleDrawerDestinationClick(
                                 destination = destination,
@@ -103,10 +110,13 @@ class NavActivity : AppCompatActivity() {
                         DrawerDestinationContent(
                             selectedDestination = selectedDestination,
                             selectedSmsAddress = selectedSmsAddress,
+                            drawerState = drawerState,
+                            scope = scope,
                             onBackToHome = { selectedDestination = DrawerDestination.Composers },
                             onSmsAddressSelected = { selectedSmsAddress = it },
                             onBackFromSmsDetail = { selectedSmsAddress = null }
                         )
+
                     }
                 }
             }
@@ -209,6 +219,8 @@ private fun handleDrawerDestinationClick(
 private fun DrawerDestinationContent(
     selectedDestination: DrawerDestination,
     selectedSmsAddress: String?,
+    drawerState: DrawerState,
+    scope: CoroutineScope,
     onBackToHome: () -> Unit,
     onSmsAddressSelected: (String) -> Unit,
     onBackFromSmsDetail: () -> Unit
@@ -245,9 +257,11 @@ private fun DrawerDestinationContent(
         }
 
         // Voice to Text variants – simple single-page screens
-        DrawerDestination.ChatWsV1-> {
+        DrawerDestination.ChatWsV1 -> {
             ChatWsSection(
                 destination = selectedDestination,
+                drawerState = drawerState,
+                scope = scope,
                 onBackToHome = onBackToHome
             )
         }
@@ -399,13 +413,22 @@ private fun VoiceToTextSection(
 @Composable
 private fun ChatWsSection(
     destination: DrawerDestination,
+    drawerState: DrawerState,
+    scope: CoroutineScope,
     onBackToHome: () -> Unit
 ) {
     when (destination) {
         DrawerDestination.ChatWsV1 -> {
-            ChatWsV1Screen()
+            ChatWsV1Screen(
+                onNavIconPressed = {
+                    scope.launch {
+                        if (!drawerState.isOpen) {
+                            drawerState.open()
+                        }
+                    }
+                }
+            )
         }
-
         else -> Unit
     }
 }

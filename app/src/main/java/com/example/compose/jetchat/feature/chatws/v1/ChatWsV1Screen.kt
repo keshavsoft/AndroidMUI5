@@ -650,7 +650,7 @@ private val JumpToBottomThreshold = 56.dp
 
 @Composable
 fun ChatWsV1Screen(
-    onBack: () -> Unit = {}
+    onNavIconPressed: () -> Unit
 ) {
     val uiState = remember {
         ChatWsUiState(
@@ -663,6 +663,6 @@ fun ChatWsV1Screen(
     ChatWsV1Content(
         uiState = uiState,
         navigateToProfile = {},
-        onNavIconPressed = onBack
+        onNavIconPressed = onNavIconPressed
     )
 }
