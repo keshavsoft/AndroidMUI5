@@ -10,11 +10,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.platform.LocalContext
-import java.text.SimpleDateFormat
-import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -23,10 +21,16 @@ fun SmsDetailScreenV5(
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
-    var messages by remember { mutableStateOf<List<SmsMessage>>(emptyList()) }
+
+    var messages by remember {
+        mutableStateOf<List<SmsMessage>>(emptyList())
+    }
 
     LaunchedEffect(mobile) {
-        messages = SmsRepository.getMessagesForAddress(context, mobile)
+        messages = SmsRepository.getMessagesForAddress(
+            context = context,
+            address = mobile
+        )
     }
 
     Scaffold(
@@ -44,15 +48,16 @@ fun SmsDetailScreenV5(
             )
         }
     ) { innerPadding ->
+
         if (messages.isEmpty()) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(innerPadding)
+                    .padding(innerPadding),
+                contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = "No messages with this contact",
-                    modifier = Modifier.align(Alignment.Center),
                     textAlign = TextAlign.Center
                 )
             }
@@ -64,9 +69,14 @@ fun SmsDetailScreenV5(
                     .padding(horizontal = 8.dp, vertical = 4.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(messages, key = { it.timestamp }) { msg ->
-                    ChatBubble(message = msg)
-
+                items(
+                    items = messages,
+                    key = { "${it.timestamp}_${it.body.hashCode()}" }
+                ) { msg ->
+                    ChatBubble(
+                        message = msg,
+                        modifier = Modifier.fillMaxWidth()
+                    )
                 }
             }
         }

@@ -25,7 +25,7 @@ android {
     namespace = "com.example.compose.jetchat"
 
     defaultConfig {
-        applicationId = "com.example.compose.jetchat"
+        applicationId = "com.example.compose.jetchatMUI5"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
         versionCode = 1
